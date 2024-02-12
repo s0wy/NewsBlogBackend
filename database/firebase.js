@@ -31,3 +31,9 @@ export async function getUsers(db) {
   const userList = userSnapshot.docs.map(doc => doc.data());
   return userList;
 };
+export async function getNews(db) {
+  const newsCol = collection(db, 'news');
+  const newsSnapshot = await getDocs(newsCol);
+  const newsList = newsSnapshot.docs.map(doc => doc.data());
+  return newsList;
+};
