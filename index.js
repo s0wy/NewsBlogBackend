@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc} from 'firebase/firestore/lite';
+import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, getDoc} from 'firebase/firestore/lite';
 import { db, getCategory,getUsers,getNews} from './database/firebase.js';
 const app = express();
 
@@ -16,7 +16,24 @@ app.use(bodyParser.urlencoded({extended: true,limit:'50mb'}))
 
 app.get('/category',async (req,res)=> {
     const categoryList = await getCategory(db);
-    res.send(categoryList);
+    const {limit: limited} = req.query;
+    const limitNum = parseInt(limited);
+    if(limitNum != 0) {
+
+        const q = query(collection(db,'category'),limit(limitNum));
+        const querySnapshot = await getDocs(q);;
+        const listOfCategory = querySnapshot.docs.map(doc => doc.data());
+
+        res.status(200);
+        res.send(listOfCategory);
+    }
+    else if(limitNum == 0) {
+        res.status(401).send("Syntax mistake")
+    }
+    else {
+        res.status(200);
+        res.send(categoryList);
+    }
 
 });
 
@@ -30,10 +47,10 @@ app.post('/category', async (req, res) => {
             categoryName: req.body.categoryName
         });
         
-        res.status(200).send("Объект успешно добавлен");
+        res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Ошибка сервера");
+        res.status(500).send("Internal error");
     }
 }); 
 
@@ -55,7 +72,7 @@ app.patch('/category', async(req,res) => {
         res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Denied");
+        res.status(500).send("Internal error");
     }
     });
 
@@ -74,7 +91,7 @@ app.delete('/category', async(req,res) => {
         res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Denied");
+        res.status(500).send("Internal error");
     }
     });
 })
@@ -111,15 +128,30 @@ app.post('/auth', async (req, res) => {
 
 app.get('/news',async (req,res)=> {
     const newsList = await getNews(db);
-    res.send(newsList);
+    const {limit: limited} = req.query;
+    const limitNum = parseInt(limited);
+    if(limitNum != 0) {
+
+        const q = query(collection(db,'news'),limit(limitNum));
+        const querySnapshot = await getDocs(q);;
+        const listOfNews = querySnapshot.docs.map(doc => doc.data());
+
+        res.status(200);
+        res.send(listOfNews);
+    }
+    else if(limitNum == 0) {
+        res.status(401).send("Syntax mistake")
+    }
+    else {
+        res.status(200);
+        res.send(newsList);
+    }
 
 });
 
 //
 
 app.post('/news', async (req, res) => {
-    console.log(typeof(req.body));
-    console.log(req.body);
     try {
         await addDoc(collection(db,'news'),{
                 newsImage: req.body.newsImage,
@@ -130,10 +162,10 @@ app.post('/news', async (req, res) => {
                 newsContent: req.body.newsContent
         });
         
-        res.status(200).send("Объект успешно добавлен");
+        res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Ошибка сервера");
+        res.status(500).send("Internal error");
     }
 }); 
 
@@ -141,21 +173,26 @@ app.post('/news', async (req, res) => {
 
 app.patch('/news', async(req,res) => {
 
-    const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
+   
+    const q = query(collection(db, "news"), where("newsId", "==", req.body.newsId));
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async ({id}) => {
       try {
-        const categoryField = doc(db,'category',id);
+        const categoryField = doc(db,'news',id);
         await updateDoc(categoryField, {
-            categoryLink: req.body.categoryLink,
-            categoryName: req.body.categoryName
+            newsImage: req.body.newsImage,
+            newsSubtitle: req.body.newsSubtitle,
+            newsId: req.body.newsId,
+            newsTitle: req.body.newsTitle,
+            newsCategory: req.body.newsCategory,
+            newsContent: req.body.newsContent
         });
         
         res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Denied");
+        res.status(500).send("Internal error");
     }
     });
 
@@ -164,17 +201,17 @@ app.patch('/news', async(req,res) => {
 //
 
 app.delete('/news', async(req,res) => {
-    const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
+    const q = query(collection(db, "news"), where("newsId", "==", req.body.newsId));
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async ({id}) => {
       try {
-        await deleteDoc(doc(db,'category',id));
+        await deleteDoc(doc(db,'news',id));
         
         res.status(200).send("Success");
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Denied");
+        res.status(500).send("Internal error");
     }
     });
 })
