@@ -3,10 +3,11 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, getDoc} from 'firebase/firestore/lite';
 import { db, getCategory,getUsers,getNews} from './database/firebase.js';
+import { generate_random_string } from "./middlewares/randomId.js";
 const app = express();
 
 app.use(cors({
-    origin: ['http://127.0.0.1:5500','http://localhost:5173'], // Разрешенный источник запросов
+    origin: ['http://127.0.0.1:5500','http://localhost:5173','https://supervision-nine.vercel.app'], // Разрешенный источник запросов
     methods: 'GET, POST, PATCH, DELETE' // Допустимые методы запросов
 }));
 app.use(bodyParser.json({limit: '50mb'}));
@@ -139,7 +140,7 @@ app.get('/news',async (req,res)=> {
         res.status(200);
         res.send(listOfNews);
     }
-    else if(limitNum == 0) {
+    else if(limitNum <= 0) {
         res.status(401).send("Syntax mistake")
     }
     else {
@@ -153,14 +154,18 @@ app.get('/news',async (req,res)=> {
 
 app.post('/news', async (req, res) => {
     try {
-        await addDoc(collection(db,'news'),{
-                newsImage: req.body.newsImage,
-                newsSubtitle: req.body.newsSubtitle,
-                newsId: req.body.newsId,
-                newsTitle: req.body.newsTitle,
-                newsCategory: req.body.newsCategory,
+        if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined) {
+            await addDoc(collection(db,'news'),{
+                newsId: generate_random_string(9),
                 newsContent: req.body.newsContent
         });
+        }
+        else {
+            await addDoc(collection(db,'news'),{
+                    newsId: req.body.newsId,
+                    newsContent: req.body.newsContent
+            });
+        }
         
         res.status(200).send("Success");
     } catch (error) {
