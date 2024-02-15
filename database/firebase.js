@@ -1,24 +1,30 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs,setDoc,getDoc } from 'firebase/firestore/lite';
+import { getDownloadURL, getStorage, ref ,uploadBytesResumable } from 'firebase/storage';
+import { getAuth,signInWithEmailAndPassword } from 'firebase/auth'
+import dotenv from 'dotenv';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+dotenv.config();
 const firebaseConfig = {
-  apiKey: "AIzaSyDJcTMSeiMvWD3G3U-nSwv_Io6arvOgkSM",
-  authDomain: "basekurator.firebaseapp.com",
-  projectId: "basekurator",
-  storageBucket: "basekurator.appspot.com",
-  messagingSenderId: "535688510843",
-  appId: "1:535688510843:web:4da1f208d2b3ac7ed451de",
-  measurementId: "G-JZ9S9MQZJK"
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+const auth = getAuth(app)
+
 export async function getCategory(db) {
   const categorysCol = collection(db, 'category');
   const categorySnapshot = await getDocs(categorysCol);
@@ -37,3 +43,39 @@ export async function getNews(db) {
   const newsList = newsSnapshot.docs.map(doc => doc.data());
   return newsList;
 };
+export async function uploadImage(file, quantity) {
+  const storageFB = getStorage();
+  await signInWithEmailAndPassword(auth, process.env.FIREBASE_USER, process.env.FIREBASE_AUTH);
+
+  if (quantity === 'single') {
+      const dateTime = Date.now();
+      const fileName = `images/${dateTime}`
+      const storageRef = ref(storageFB, fileName)
+      const metadata = {
+          contentType: file.type,
+      }
+      const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata);
+      const downloadUrl = getDownloadURL(snapshot.ref)
+      return downloadUrl
+  }
+
+  if (quantity === 'multiple') {
+      for(let i=0; i < file.images.length; i++) {
+          const dateTime = Date.now();
+          const fileName = `images/${dateTime}`
+          const storageRef = ref(storageFB, fileName)
+          const metadata = {
+              contentType: file.images[i].mimetype,
+          }
+
+          const saveImage = await Image.create({imageUrl: fileName});
+          file.item.imageId.push({_id: saveImage._id});
+          await file.item.save();
+
+          await uploadBytesResumable(storageRef, file.images[i].buffer, metadata);
+
+      }
+      return
+  }
+
+}

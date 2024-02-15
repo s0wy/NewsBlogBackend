@@ -2,8 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, getDoc} from 'firebase/firestore/lite';
-import { db, getCategory,getUsers,getNews} from './database/firebase.js';
+import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
+import { upload, uploadMultiple} from './middlewares/multer.cjs';
 const app = express();
 
 app.use(cors({
@@ -157,13 +158,16 @@ app.post('/news', async (req, res) => {
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined) {
             await addDoc(collection(db,'news'),{
                 newsId: generate_random_string(9),
-                newsContent: req.body.newsContent
+                newsContent: req.body.newsContent,
+                categoryName: req.body.categoryName
+                
         });
         }
         else {
             await addDoc(collection(db,'news'),{
                     newsId: req.body.newsId,
-                    newsContent: req.body.newsContent
+                    newsContent: req.body.newsContent,
+                    categoryName: req.body.categoryName
             });
         }
         
@@ -227,6 +231,24 @@ app.put('/news', async(req,res) => {
 app.options('/news', async(req,res) => { 
     res.status(404).send("Not Found");
 });
+
+
+
+app.post('/test-upload', upload, async (req, res) => {
+    const file = {
+        type: req.file.mimetype,
+        buffer: req.file.buffer
+    }
+    try {
+        const buildImage = await uploadImage(file, 'single'); 
+        res.send({
+            status: "SUCCESS",
+            imageName: buildImage
+        })
+    } catch(err) {
+        console.log(err);
+    }
+})
 
 
 app.listen(3000);
