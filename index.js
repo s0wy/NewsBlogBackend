@@ -195,11 +195,12 @@ app.post('/news', async (req, res) => {
     try {
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
         req.body.newsUrl === "") {
+            const newsId = generate_random_string(9);
             await addDoc(collection(db,'news'),{
-                newsId: generate_random_string(9),
+                newsId: newsId,
                 newsContent: req.body.newsContent,
                 categoryName: req.body.categoryName,
-                newsUrl: generate_random_url(req.body.categoryName),
+                newsUrl: generate_random_url(req.body.categoryName,newsId),
                 title: req.body.title,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl

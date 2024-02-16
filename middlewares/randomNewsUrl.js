@@ -1,4 +1,3 @@
-import { generate_random_string } from "./randomId.js";
 function translit(word){
 	var converter = {
 		'а': 'a',    'б': 'b',    'в': 'v',    'г': 'g',    'д': 'd',
@@ -26,7 +25,7 @@ function translit(word){
 	answer = answer.replace(/^\-|-$/g, ''); 
 	return answer;
 }
-export function generate_random_url(categoryName) {
-    const url = `/${translit(categoryName)}/?id=${generate_random_string(9)}`;
+export function generate_random_url(categoryName,newsId) {
+    const url = `/${translit(categoryName)}/?id=${newsId}`;
     return url;
 }
