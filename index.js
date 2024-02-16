@@ -5,6 +5,7 @@ import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, 
 import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload, uploadMultiple} from './middlewares/multer.cjs';
+import { generate_random_url } from "./middlewares/randomNewsUrl.js";
 const app = express();
 
 app.use(cors({
@@ -26,14 +27,20 @@ app.get('/category',async (req,res)=> {
         const querySnapshot = await getDocs(q);;
         const listOfCategory = querySnapshot.docs.map(doc => doc.data());
 
-        res.status(200);
+        res.status(200).send({
+            status: "SUCCESS"
+        })
         res.send(listOfCategory);
     }
     else if(limitNum == 0) {
-        res.status(401).send("Syntax mistake")
+        res.status(401).send({
+            status: "Syntax mistake"
+        })
     }
     else {
-        res.status(200);
+        res.status(200).send({
+            status: "SUCCESS"
+        })
         res.send(categoryList);
     }
 
@@ -49,10 +56,14 @@ app.post('/category', async (req, res) => {
             categoryName: req.body.categoryName
         });
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
 }); 
 
@@ -71,10 +82,14 @@ app.patch('/category', async(req,res) => {
             categoryName: req.body.categoryName
         });
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
     });
 
@@ -90,19 +105,28 @@ app.delete('/category', async(req,res) => {
       try {
         await deleteDoc(doc(db,'category',id));
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
     });
 })
 
 app.put('/category', async(req,res) => { 
-    res.status(404).send("Not Found");
+    res.status(404).send({
+        status: "Not Found"
+    })
 });
 app.options('/category', async(req,res) => { 
-    res.status(404).send("Not Found");
+    res.status(404).send({
+        status: "Not Found"
+    })
+    
 });
 
 
@@ -114,7 +138,9 @@ app.post('/auth', async (req, res) => {
         userList.forEach(user =>  {
             if (user.login === req.body.login &&
                  user.password === req.body.password) {
-                    res.status(200).send("Успешная авторизация");
+                    res.status(200).send({
+                        status: "SUCCESS"
+                    })
                 }
             else {
                 throw new Error("Access denied")
@@ -122,7 +148,10 @@ app.post('/auth', async (req, res) => {
         })
        
     } catch (error) {
-        res.status(403).send(error.message);
+        res.status(403).send({
+            status: error.message
+        })
+        
     }
 });
 
@@ -138,14 +167,20 @@ app.get('/news',async (req,res)=> {
         const querySnapshot = await getDocs(q);;
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
 
-        res.status(200);
+        res.status(200).send({
+            status: "SUCCESS"
+        })
         res.send(listOfNews);
     }
     else if(limitNum <= 0) {
-        res.status(401).send("Syntax mistake")
+        res.status(401).send({
+            status: "Syntax mistake"
+        })
     }
     else {
-        res.status(200);
+        res.status(200).send({
+            status: "SUCCESS"
+        })
         res.send(newsList);
     }
 
@@ -154,12 +189,21 @@ app.get('/news',async (req,res)=> {
 //
 
 app.post('/news', async (req, res) => {
+    if(!req.body.newsUrl) {
+
+    
     try {
-        if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined) {
+        if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
+        req.body.newsUrl === "") {
             await addDoc(collection(db,'news'),{
                 newsId: generate_random_string(9),
                 newsContent: req.body.newsContent,
-                categoryName: req.body.categoryName
+                categoryName: req.body.categoryName,
+                newsUrl: generate_random_url(req.body.categoryName),
+                title: req.body.title,
+                subTitle: req.body.subTitle,
+                titleImageUrl: req.body.titleImageUrl
+                
                 
         });
         }
@@ -167,15 +211,29 @@ app.post('/news', async (req, res) => {
             await addDoc(collection(db,'news'),{
                     newsId: req.body.newsId,
                     newsContent: req.body.newsContent,
-                    categoryName: req.body.categoryName
+                    categoryName: req.body.categoryName,
+                    newsUrl: generate_random_url(req.body.categoryName),
+                    title: req.body.title,
+                    subTitle: req.body.subTitle,
+                    titleImageUrl: req.body.titleImageUrl
             });
         }
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
+}
+else {
+    res.status(501).send({
+        status: "Not Implemented"
+    })
+}
 }); 
 
 //
@@ -188,9 +246,9 @@ app.patch('/news', async(req,res) => {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async ({id}) => {
       try {
-        const categoryField = doc(db,'news',id);
-        await updateDoc(categoryField, {
-            newsImage: req.body.newsImage,
+        const newsField = doc(db,'news',id);
+        await updateDoc(newsField, {
+            newsI: req.body.newsImage,
             newsSubtitle: req.body.newsSubtitle,
             newsId: req.body.newsId,
             newsTitle: req.body.newsTitle,
@@ -198,10 +256,14 @@ app.patch('/news', async(req,res) => {
             newsContent: req.body.newsContent
         });
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
     });
 
@@ -217,19 +279,27 @@ app.delete('/news', async(req,res) => {
       try {
         await deleteDoc(doc(db,'news',id));
         
-        res.status(200).send("Success");
+        res.status(200).send({
+            status: "SUCCESS"
+        })
     } catch (error) {
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send("Internal error");
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
     });
 })
 
 app.put('/news', async(req,res) => { 
-    res.status(404).send("Not Found");
+    res.status(404).send({
+        status: "Not Found"
+    })
 });
 app.options('/news', async(req,res) => { 
-    res.status(404).send("Not Found");
+    res.status(404).send({
+        status: "Not Found"
+    })
 });
 
 
@@ -247,6 +317,9 @@ app.post('/test-upload', upload, async (req, res) => {
         })
     } catch(err) {
         console.log(err);
+        res.status(500).send({
+            status: "Internal Error"
+        })
     }
 })
 
