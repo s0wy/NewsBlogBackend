@@ -6,6 +6,7 @@ import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload, uploadMultiple} from './middlewares/multer.cjs';
 import { generate_random_url } from "./middlewares/randomNewsUrl.js";
+import { list } from "firebase/storage";
 const app = express();
 
 app.use(cors({
@@ -166,11 +167,10 @@ app.get('/news',async (req,res)=> {
         const q = query(collection(db,'news'),limit(limitNum));
         const querySnapshot = await getDocs(q);;
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
-
+        res.send(listOfNews);
         res.status(200).send({
             status: "SUCCESS"
         })
-        res.send(listOfNews);
     }
     else if(limitNum <= 0) {
         res.status(401).send({
