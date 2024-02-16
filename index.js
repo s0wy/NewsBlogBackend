@@ -165,7 +165,7 @@ app.get('/news',async (req,res)=> {
     const limitNum = parseInt(limited);
     if(limitNum != 0) {
 
-        const q = query(collection(db,'news'),limit(limitNum),orderBy('createdAt', 'desc'));
+        const q = query(collection(db,'news'),limit(limitNum),orderBy('createdAt', 'asc'));
         const querySnapshot = await getDocs(q);;
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
         res.status(200).send({
