@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs,setDoc,getDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs,setDoc,getDoc,orderBy,query  } from 'firebase/firestore/lite';
 import { getDownloadURL, getStorage, ref ,uploadBytesResumable } from 'firebase/storage';
 import { getAuth,signInWithEmailAndPassword } from 'firebase/auth'
 import dotenv from 'dotenv';
@@ -38,7 +38,7 @@ export async function getUsers(db) {
   return userList;
 };
 export async function getNews(db) {
-  const newsCol = collection(db, 'news');
+  const newsCol = query(collection(db, 'news'),orderBy('createdAt', 'desc'));
   const newsSnapshot = await getDocs(newsCol);
   const newsList = newsSnapshot.docs.map(doc => doc.data());
   return newsList;

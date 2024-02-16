@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, getDoc} from 'firebase/firestore/lite';
+import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, serverTimestamp, orderBy} from 'firebase/firestore/lite';
 import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload, uploadMultiple} from './middlewares/multer.cjs';
@@ -165,7 +165,7 @@ app.get('/news',async (req,res)=> {
     const limitNum = parseInt(limited);
     if(limitNum != 0) {
 
-        const q = query(collection(db,'news'),limit(limitNum));
+        const q = query(collection(db,'news'),limit(limitNum),orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);;
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
         res.status(200).send({
@@ -196,7 +196,7 @@ app.post('/news', async (req, res) => {
     
     try {
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
-        req.body.newsUrl === "") {
+        req.body.newsUrl === "" || req.body.createdAt === "" || req.body.createdAt === undefined) {
             const newsId = generate_random_string(9);
             await addDoc(collection(db,'news'),{
                 newsId: newsId,
@@ -205,7 +205,8 @@ app.post('/news', async (req, res) => {
                 newsUrl: generate_random_url(req.body.categoryName,newsId),
                 title: req.body.title,
                 subTitle: req.body.subTitle,
-                titleImageUrl: req.body.titleImageUrl
+                titleImageUrl: req.body.titleImageUrl,
+                createdAt: serverTimestamp()
                 
                 
         });
@@ -218,7 +219,8 @@ app.post('/news', async (req, res) => {
                     newsUrl: generate_random_url(req.body.categoryName),
                     title: req.body.title,
                     subTitle: req.body.subTitle,
-                    titleImageUrl: req.body.titleImageUrl
+                    titleImageUrl: req.body.titleImageUrl,
+                    createdAt: serverTimestamp()
             });
         }
         
