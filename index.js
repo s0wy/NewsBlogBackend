@@ -27,9 +27,9 @@ app.get('/category',async (req,res)=> {
         const q = query(collection(db,'category'),limit(limitNum));
         const querySnapshot = await getDocs(q);;
         const listOfCategory = querySnapshot.docs.map(doc => doc.data());
-        res.send(listOfCategory);
         res.status(200).send({
-            status: "SUCCESS"
+            status: "SUCCESS",
+            categories: listOfCategory
         })
         
     }
@@ -40,9 +40,10 @@ app.get('/category',async (req,res)=> {
     }
     else {
         res.status(200).send({
-            status: "SUCCESS"
+            status: "SUCCESS",
+            categories: categoryList
         })
-        res.send(categoryList);
+       
     }
 
 });
@@ -167,9 +168,9 @@ app.get('/news',async (req,res)=> {
         const q = query(collection(db,'news'),limit(limitNum));
         const querySnapshot = await getDocs(q);;
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
-        res.send(listOfNews);
         res.status(200).send({
-            status: "SUCCESS"
+            status: "SUCCESS",
+            news: listOfNews
         })
     }
     else if(limitNum <= 0) {
@@ -178,10 +179,10 @@ app.get('/news',async (req,res)=> {
         })
     }
     else {
-        res.send(newsList);
         res.status(200).send({
-            status: "SUCCESS"
-        })
+            status: "SUCCESS",
+            news: newsList   
+         })
        
     }
 
