@@ -27,11 +27,11 @@ app.get('/category',async (req,res)=> {
         const q = query(collection(db,'category'),limit(limitNum));
         const querySnapshot = await getDocs(q);;
         const listOfCategory = querySnapshot.docs.map(doc => doc.data());
-
+        res.send(listOfCategory);
         res.status(200).send({
             status: "SUCCESS"
         })
-        res.send(listOfCategory);
+        
     }
     else if(limitNum == 0) {
         res.status(401).send({
@@ -178,10 +178,11 @@ app.get('/news',async (req,res)=> {
         })
     }
     else {
+        res.send(newsList);
         res.status(200).send({
             status: "SUCCESS"
         })
-        res.send(newsList);
+       
     }
 
 });
