@@ -26,6 +26,6 @@ function translit(word){
 	return answer;
 }
 export function generate_random_url(categoryName,newsId) {
-    const url = `/news/?category=${translit(categoryName)}/?id=${newsId}`;
+    const url = `/news/${translit(categoryName)}/${newsId}`;
     return url;
 }
