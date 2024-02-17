@@ -163,6 +163,7 @@ app.get('/news',async (req,res)=> {
     const newsList = await getNews(db);
     const {limit: limited} = req.query;
     const limitNum = parseInt(limited);
+    
     if(limitNum != 0) {
 
         const q = query(collection(db,'news'),limit(limitNum),orderBy('createdAt', 'asc'));
@@ -188,6 +189,31 @@ app.get('/news',async (req,res)=> {
 
 });
 
+//
+
+app.get('/news-category',async (req,res)=> {
+    const newsList = await getNews(db);
+    const {category} = req.query;
+    const result = category.charAt(0).toUpperCase() + category.slice(1)
+    if(category != "") {
+        const q = query(collection(db,'news'),where("categoryName","==",result));
+        const querySnapshot = await getDocs(q);;
+        const listOfNews = querySnapshot.docs.map(doc => doc.data());
+        res.status(200).send({
+            status: "SUCCESS",
+            news: listOfNews
+        })
+
+    }
+    else {
+        res.status(200).send({
+            status: "SUCCESS",
+            news: newsList   
+         })
+       
+    }
+
+});
 //
 
 app.post('/news', async (req, res) => {
