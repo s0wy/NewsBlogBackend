@@ -1,10 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, serverTimestamp, orderBy} from 'firebase/firestore/lite';
+import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, serverTimestamp, orderBy,startAt, startAfter} from 'firebase/firestore/lite';
 import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
-import { upload, uploadMultiple} from './middlewares/multer.cjs';
+import { upload} from './middlewares/multer.cjs';
 import { generate_random_url } from "./middlewares/randomNewsUrl.js";
 import { list } from "firebase/storage";
 const app = express();
@@ -19,18 +19,16 @@ app.use(bodyParser.urlencoded({extended: true,limit:'50mb'}))
 //
 
 app.get('/category',async (req,res)=> {
-    const categoryList = await getCategory(db);
     const {limit: limited} = req.query;
-    const limitNum = parseInt(limited);
-    if(limitNum != 0) {
-
-        const q = query(collection(db,'category'),limit(limitNum));
-        const querySnapshot = await getDocs(q);;
-        const listOfCategory = querySnapshot.docs.map(doc => doc.data());
+    let limitNum = parseInt(limited);
+    if(!limitNum) {
+        const categoryList = await getCategory(db);
+        console.log("if2")
         res.status(200).send({
             status: "SUCCESS",
-            categories: listOfCategory
+            categories: categoryList
         })
+      
         
     }
     else if(limitNum == 0) {
@@ -39,10 +37,14 @@ app.get('/category',async (req,res)=> {
         })
     }
     else {
+        const q = query(collection(db,'category'),limit(limitNum));
+        const querySnapshot = await getDocs(q);;
+        const listOfCategory = querySnapshot.docs.map(doc => doc.data());
         res.status(200).send({
             status: "SUCCESS",
-            categories: categoryList
+            categories: listOfCategory
         })
+        console.log("if1")
        
     }
 
@@ -160,39 +162,46 @@ app.post('/auth', async (req, res) => {
 ///
 
 app.get('/news',async (req,res)=> {
-    const newsList = await getNews(db);
     const {limit: limited} = req.query;
+    const {page: pages} = req.query;
     const limitNum = parseInt(limited);
-    
-    if(limitNum != 0) {
-
-        const q = query(collection(db,'news'),limit(limitNum),orderBy('createdAt', 'asc'));
-        const querySnapshot = await getDocs(q);;
-        const listOfNews = querySnapshot.docs.map(doc => doc.data());
+    const page = parseInt(pages);
+    if(!limitNum || !page) {
+        console.log("if2")
+        const newsList = await getNews(db);
         res.status(200).send({
             status: "SUCCESS",
-            news: listOfNews
-        })
+            news: newsList   
+         })
     }
     else if(limitNum <= 0) {
         res.status(401).send({
             status: "Syntax mistake"
         })
     }
-    else {
-        res.status(200).send({
-            status: "SUCCESS",
-            news: newsList   
+    else{
+         console.log("if1")
+
+         const q = query(
+         collection(db,'news'),
+         orderBy('createdAt', 'desc'),
+         limit(limitNum));
+
+         const querySnapshot = await getDocs(q);;
+         console.log("dlina" + querySnapshot.docs.length)
+         const listOfNews = querySnapshot.docs.map(doc => doc.data());
+         res.status(200).send({
+             status: "SUCCESS",
+             news: listOfNews
          })
        
     }
-
-});
+    }
+);
 
 //
 
 app.get('/news-category',async (req,res)=> {
-    const newsList = await getNews(db);
     const {category} = req.query;
     const result = category.charAt(0).toUpperCase() + category.slice(1)
     if(category != "") {
@@ -206,6 +215,7 @@ app.get('/news-category',async (req,res)=> {
 
     }
     else {
+        const newsList = await getNews(db);
         res.status(200).send({
             status: "SUCCESS",
             news: newsList   

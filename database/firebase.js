@@ -38,7 +38,7 @@ export async function getUsers(db) {
   return userList;
 };
 export async function getNews(db) {
-  const newsCol = query(collection(db, 'news'),orderBy('createdAt', 'asc'));
+  const newsCol = query(collection(db, 'news'),orderBy('createdAt', 'desc'));
   const newsSnapshot = await getDocs(newsCol);
   const newsList = newsSnapshot.docs.map(doc => doc.data());
   return newsList;
