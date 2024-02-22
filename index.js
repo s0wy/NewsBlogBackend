@@ -23,7 +23,6 @@ app.get('/category',async (req,res)=> {
     let limitNum = parseInt(limited);
     if(!limitNum) {
         const categoryList = await getCategory(db);
-        console.log("if2")
         res.status(200).send({
             status: "SUCCESS",
             categories: categoryList
@@ -44,7 +43,6 @@ app.get('/category',async (req,res)=> {
             status: "SUCCESS",
             categories: listOfCategory
         })
-        console.log("if1")
        
     }
 
@@ -167,7 +165,6 @@ app.get('/news',async (req,res)=> {
     const limitNum = parseInt(limited);
     const page = parseInt(pages);
     if(!limitNum || !page) {
-        console.log("if2")
         const newsList = await getNews(db);
         res.status(200).send({
             status: "SUCCESS",
@@ -180,15 +177,20 @@ app.get('/news',async (req,res)=> {
         })
     }
     else{
-         console.log("if1")
+         const q1 = query(
+            collection(db,'news'),
+            orderBy('id', 'desc'),
+            limit(1));
+            const querySnapshot1 = await getDocs(q1);;
+            const listOfNews1 = querySnapshot1.docs.map(doc => doc.data());
 
          const q = query(
          collection(db,'news'),
-         orderBy('createdAt', 'desc'),
+         orderBy('id', 'desc'),
+         startAt(listOfNews1[0].id - (page * 10 - 10)),
          limit(limitNum));
 
          const querySnapshot = await getDocs(q);;
-         console.log("dlina" + querySnapshot.docs.length)
          const listOfNews = querySnapshot.docs.map(doc => doc.data());
          res.status(200).send({
              status: "SUCCESS",
@@ -228,12 +230,18 @@ app.get('/news-category',async (req,res)=> {
 
 app.post('/news', async (req, res) => {
     if(!req.body.newsUrl) {
-
+        const newsId = generate_random_string(9);
+        const q = query(
+            collection(db,'news'),
+            orderBy('id', 'desc'),
+            limit(1));
+   
+            const querySnapshot = await getDocs(q);;
+            const listOfNews = querySnapshot.docs.map(doc => doc.data());
     
     try {
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
         req.body.newsUrl === "" || req.body.createdAt === "" || req.body.createdAt === undefined) {
-            const newsId = generate_random_string(9);
             await addDoc(collection(db,'news'),{
                 newsId: newsId,
                 newsContent: req.body.newsContent,
@@ -242,7 +250,7 @@ app.post('/news', async (req, res) => {
                 title: req.body.title,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
-                createdAt: serverTimestamp()
+                id: listOfNews[0].id+1
                 
                 
         });
@@ -256,7 +264,7 @@ app.post('/news', async (req, res) => {
                     title: req.body.title,
                     subTitle: req.body.subTitle,
                     titleImageUrl: req.body.titleImageUrl,
-                    createdAt: serverTimestamp()
+                    id: listOfNews[0].id+1
             });
         }
         
@@ -276,7 +284,6 @@ else {
     })
 }
 }); 
-
 //
 
 app.patch('/news', async(req,res) => {
