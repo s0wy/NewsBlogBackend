@@ -1,14 +1,18 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit, serverTimestamp, orderBy,startAt, startAfter} from 'firebase/firestore/lite';
+import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit,orderBy,startAt, arrayUnion} from 'firebase/firestore/lite';
 import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload} from './middlewares/multer.cjs';
 import { generate_random_url } from "./middlewares/randomNewsUrl.js";
-import { list } from "firebase/storage";
+import  jwt  from "jsonwebtoken"
+import dotenv from 'dotenv';
 const app = express();
 
+
+
+dotenv.config();
 app.use(cors({
     origin: ['http://127.0.0.1:5500','http://localhost:5173','https://supervision-nine.vercel.app'], // Разрешенный источник запросов
     methods: 'GET, POST, PATCH, DELETE' // Допустимые методы запросов
@@ -23,6 +27,7 @@ app.get('/category',async (req,res)=> {
     let limitNum = parseInt(limited);
     if(!limitNum) {
         const categoryList = await getCategory(db);
+        console.log(categoryList[0]);
         res.status(200).send({
             status: "SUCCESS",
             categories: categoryList
@@ -51,28 +56,29 @@ app.get('/category',async (req,res)=> {
 //
 
 app.post('/category', async (req, res) => {
-    try {
-        await addDoc(collection(db,'category'),{
-            categoryId: req.body.categoryId,
-            categoryLink: req.body.categoryLink,
-            categoryName: req.body.categoryName
-        });
-        
-        res.status(200).send({
-            status: "SUCCESS"
-        })
-    } catch (error) {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
+    })
         console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send({
-            status: "Internal Error"
+        res.status(404).send({
+            status: "Not found"
         })
-    }
 }); 
 
 //
 
 app.patch('/category', async(req,res) => {
-
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
+    })
     const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
 
     const querySnapshot = await getDocs(q);
@@ -100,6 +106,13 @@ app.patch('/category', async(req,res) => {
 //
 
 app.delete('/category', async(req,res) => {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
+    })
     const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
 
     const querySnapshot = await getDocs(q);
@@ -120,10 +133,36 @@ app.delete('/category', async(req,res) => {
 })
 
 app.put('/category', async(req,res) => { 
-    res.status(404).send({
-        status: "Not Found"
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
     })
-});
+    const newCategory = {
+        categoryId: req.body.categoryId,
+        categoryLink: req.body.categoryLink,
+        categoryName: req.body.categoryName
+    }
+    try {
+        await updateDoc(doc(db,'category',"vzN6ranpGrG4SZfCMsvb"),{
+            categories: 
+                arrayUnion(newCategory)
+    })
+    res.status(200).send({
+        status: "SUCCESS"
+    })
+            
+    }
+         catch (error) {
+        console.error("Ошибка при добавлении объекта:", error);
+        res.status(500).send({
+            status: "Internal Error"
+        })
+    }
+}); 
+
 app.options('/category', async(req,res) => { 
     res.status(404).send({
         status: "Not Found"
@@ -136,12 +175,16 @@ app.options('/category', async(req,res) => {
 
 app.post('/auth', async (req, res) => {
    const userList = await getUsers(db);
+   console.log(userList);
+   console.log(req.body)
     try {
         userList.forEach(user =>  {
             if (user.login === req.body.login &&
-                 user.password === req.body.password) {
+                 user.password === req.body.password) { 
+                    const token = jwt.sign({ username: user.login }, process.env.secretKey, { expiresIn: '100h' });
                     res.status(200).send({
-                        status: "SUCCESS"
+                        status: "SUCCESS",
+                        token: token
                     })
                 }
             else {
@@ -229,6 +272,14 @@ app.get('/news-category',async (req,res)=> {
 //
 
 app.post('/news', async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+          
+        }
+    });
     if(!req.body.newsUrl) {
         const newsId = generate_random_string(9);
         const q = query(
@@ -277,18 +328,24 @@ app.post('/news', async (req, res) => {
             status: "Internal Error"
         })
     }
-}
-else {
+    }
+    else {
     res.status(501).send({
         status: "Not Implemented"
     })
-}
+    }
 }); 
 //
 
 app.patch('/news', async(req,res) => {
 
-   
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
+    })
     const q = query(collection(db, "news"), where("newsId", "==", req.body.newsId));
 
     const querySnapshot = await getDocs(q);
@@ -320,6 +377,13 @@ app.patch('/news', async(req,res) => {
 //
 
 app.delete('/news', async(req,res) => {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+        }
+    })
     const q = query(collection(db, "news"), where("newsId", "==", req.body.newsId));
 
     const querySnapshot = await getDocs(q);
