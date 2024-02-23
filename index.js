@@ -199,6 +199,15 @@ app.post('/auth', async (req, res) => {
         
     }
 });
+app.post('/checkAuth', async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+            return res.status(200).json({ message: 'success' });
+        }
+ })});
 
 ///
 
