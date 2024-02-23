@@ -5,7 +5,7 @@ import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit,o
 import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.js';
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload} from './middlewares/multer.cjs';
-import { generate_random_url } from "./middlewares/randomNewsUrl.js";
+import { generate_random_url,generate_random_urlForCat } from "./middlewares/randomNewsUrl.js";
 import  jwt  from "jsonwebtoken"
 import dotenv from 'dotenv';
 const app = express();
@@ -142,7 +142,7 @@ app.put('/category', async(req,res) => {
     })
     const newCategory = {
         categoryId: req.body.categoryId,
-        categoryLink: req.body.categoryLink,
+        categoryLink: generate_random_urlForCat(req.body.categoryName),
         categoryName: req.body.categoryName
     }
     try {

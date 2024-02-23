@@ -29,3 +29,7 @@ export function generate_random_url(categoryName,newsId) {
     const url = `/news/${translit(categoryName)}/${newsId}`;
     return url;
 }
+export function generate_random_urlForCat(categoryName) {
+    const url = `/category/${translit(categoryName)}/`;
+    return url;
+}
