@@ -7,7 +7,8 @@ import { generate_random_string } from "./middlewares/randomId.js";
 import { upload} from './middlewares/multer.cjs';
 import { generate_random_url,generate_random_urlForCat } from "./middlewares/randomNewsUrl.js";
 import  jwt  from "jsonwebtoken"
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import http from "http"
 const app = express();
 
 
@@ -27,7 +28,6 @@ app.get('/category',async (req,res)=> {
     let limitNum = parseInt(limited);
     if(!limitNum) {
         const categoryList = await getCategory(db);
-        console.log(categoryList[0]);
         res.status(200).send({
             status: "SUCCESS",
             categories: categoryList
@@ -175,8 +175,6 @@ app.options('/category', async(req,res) => {
 
 app.post('/auth', async (req, res) => {
    const userList = await getUsers(db);
-   console.log(userList);
-   console.log(req.body)
     try {
         userList.forEach(user =>  {
             if (user.login === req.body.login &&
@@ -437,12 +435,19 @@ app.post('/test-upload', upload, async (req, res) => {
             imageName: buildImage
         })
     } catch(err) {
-        console.log(err);
         res.status(500).send({
             status: "Internal Error"
         })
     }
 })
+let server;
+app.get('/restartServer', (req, res) => {
+    res.send('Restarting server...');
+    server.close(() => {
+      server = http.createServer(app);
+      server.listen(3000, () => {
+      });
+    });
+  });
 
-
-app.listen(3000);
+server = app.listen(3000);
