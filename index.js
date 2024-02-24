@@ -8,7 +8,6 @@ import { upload} from './middlewares/multer.cjs';
 import { generate_random_url,generate_random_urlForCat } from "./middlewares/randomNewsUrl.js";
 import  jwt  from "jsonwebtoken"
 import dotenv from "dotenv";
-import http from "http"
 const app = express();
 
 
@@ -440,14 +439,4 @@ app.post('/test-upload', upload, async (req, res) => {
         })
     }
 })
-let server;
-app.get('/restartServer', (req, res) => {
-    res.send('Restarting server...');
-    server.close(() => {
-      server = http.createServer(app);
-      server.listen(3000, () => {
-      });
-    });
-  });
-
-server = app.listen(3000);
+app.listen(3000);
