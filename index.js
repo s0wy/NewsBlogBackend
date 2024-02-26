@@ -6,6 +6,7 @@ import { db,uploadImage,getCategory,getUsers,getNews} from './database/firebase.
 import { generate_random_string } from "./middlewares/randomId.js";
 import { upload} from './middlewares/multer.cjs';
 import { generate_random_url,generate_random_urlForCat } from "./middlewares/randomNewsUrl.js";
+import { translitForCat } from "./middlewares/transiltForSearch.js";
 import  jwt  from "jsonwebtoken"
 import dotenv from "dotenv";
 const app = express();
@@ -254,7 +255,9 @@ app.get('/news',async (req,res)=> {
 
 app.get('/news-category',async (req,res)=> {
     const {category} = req.query;
-    const result = category.charAt(0).toUpperCase() + category.slice(1)
+    const converted = translitForCat(category);
+    const result = converted.charAt(0).toUpperCase() + converted.slice(1)
+    console.log(result)
     if(category != "") {
         const q = query(collection(db,'news'),where("categoryName","==",result));
         const querySnapshot = await getDocs(q);;
