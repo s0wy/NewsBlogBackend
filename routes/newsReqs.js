@@ -1,4 +1,5 @@
 import { db,getNews} from '../database/firebase.js';
+import { generate_random_string } from '../middlewares/randomId.js';
 import { generate_random_url} from "../middlewares/randomNewsUrl.js";
 import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit,orderBy,startAt} from 'firebase/firestore/lite';
 import { translitForCat } from "../middlewares/transiltForSearch.js"
