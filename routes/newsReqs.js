@@ -142,6 +142,7 @@ export async function patchNews(req,res) {
         if (err) {
             return res.status(401).json({ message: 'Invalid token' });
         } else {
+            
         }
     })
     const q = query(collection(db, "news"), where("newsId", "==", req.body.newsId));
@@ -150,14 +151,13 @@ export async function patchNews(req,res) {
     querySnapshot.forEach(async ({id}) => {
       try {
         const newsField = doc(db,'news',id);
-        await updateDoc(newsField, {
-            newsI: req.body.newsImage,
-            newsSubtitle: req.body.newsSubtitle,
-            newsId: req.body.newsId,
-            newsTitle: req.body.newsTitle,
-            newsCategory: req.body.newsCategory,
-            newsContent: req.body.newsContent
-        });
+            await updateDoc(newsField, {
+                newsContent: req.body.newsContent,
+                categoryName: req.body.categoryName,
+                title: req.body.title,
+                subTitle: req.body.subTitle,
+                titleImageUrl: req.body.titleImageUrl,
+            });
         
         res.status(200).send({
             status: "SUCCESS"
