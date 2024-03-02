@@ -114,7 +114,7 @@ export async function postNews(req,res) {
                     newsId: req.body.newsId,
                     newsContent: req.body.newsContent,
                     categoryName: req.body.categoryName,
-                    newsUrl: generate_random_url(req.body.categoryName),
+                    newsUrl: generate_random_url(req.body.categoryName,newsId),
                     title: req.body.title,
                     titleForSearch: arrayOfSearchTitle,
                     subTitle: req.body.subTitle,
@@ -191,7 +191,7 @@ export async function patchNews(req,res) {
                 titleForSearch: arrayOfSearchTitle,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
-                newsUrl: generate_random_url(req.body.categoryName)
+                newsUrl: generate_random_url(req.body.categoryName,req.body.newsId)
             });
         
         res.status(200).send({
