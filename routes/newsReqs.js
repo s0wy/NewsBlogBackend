@@ -91,6 +91,8 @@ export async function postNews(req,res) {
             const listOfNews = querySnapshot.docs.map(doc => doc.data());
     
     try {
+        const searchTitle = req.body.titleForSearch;
+        const arrayOfSearchTitle = searchTitle.split(" ");
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
         req.body.newsUrl === "" || req.body.createdAt === "" || req.body.createdAt === undefined) {
             await addDoc(collection(db,'news'),{
@@ -99,6 +101,7 @@ export async function postNews(req,res) {
                 categoryName: req.body.categoryName,
                 newsUrl: generate_random_url(req.body.categoryName,newsId),
                 title: req.body.title,
+                titleForSearch: arrayOfSearchTitle,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
                 id: listOfNews[0].id+1
@@ -113,6 +116,7 @@ export async function postNews(req,res) {
                     categoryName: req.body.categoryName,
                     newsUrl: generate_random_url(req.body.categoryName),
                     title: req.body.title,
+                    titleForSearch: arrayOfSearchTitle,
                     subTitle: req.body.subTitle,
                     titleImageUrl: req.body.titleImageUrl,
                     id: listOfNews[0].id+1
@@ -136,6 +140,33 @@ export async function postNews(req,res) {
     }
     
 }
+export async function postSearchNews(req,res) {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+          
+        }
+    });
+    try {
+        const q = query(collection(db, "news"),where("titleForSearch", "array-contains",req.body.searchTitle));
+        const querySnapshot = await getDocs(q);
+        const listOfNews = querySnapshot.docs.map(doc => doc.data());
+        res.status(200).send({
+            status: "SUCCESS",
+            news: listOfNews
+        })
+    }
+    catch(error) {
+        console.error("Ошибка при добавлении объекта:", error);
+        res.status(500).send({
+            status: "Internal Error"
+        })
+    }
+  
+    
+}
 export async function patchNews(req,res) {
     const token = req.headers.authorization.split(' ')[1]; 
     jwt.verify(token, process.env.secretKey, (err, decoded) => {
@@ -157,6 +188,7 @@ export async function patchNews(req,res) {
                 title: req.body.title,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
+                newsUrl: generate_random_url(req.body.categoryName)
             });
         
         res.status(200).send({
