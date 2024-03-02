@@ -181,11 +181,14 @@ export async function patchNews(req,res) {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async ({id}) => {
       try {
+        const searchTitle = req.body.titleForSearch;
+        const arrayOfSearchTitle = searchTitle.split(" ");
         const newsField = doc(db,'news',id);
             await updateDoc(newsField, {
                 newsContent: req.body.newsContent,
                 categoryName: req.body.categoryName,
                 title: req.body.title,
+                titleForSearch: arrayOfSearchTitle,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
                 newsUrl: generate_random_url(req.body.categoryName)
