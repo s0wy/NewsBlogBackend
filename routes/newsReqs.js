@@ -104,7 +104,8 @@ export async function postNews(req,res) {
                 titleForSearch: arrayOfSearchTitle,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
-                id: listOfNews[0].id+1
+                id: listOfNews[0].id+1,
+                settings: req.body.settings
                 
                 
         });
@@ -119,7 +120,8 @@ export async function postNews(req,res) {
                     titleForSearch: arrayOfSearchTitle,
                     subTitle: req.body.subTitle,
                     titleImageUrl: req.body.titleImageUrl,
-                    id: listOfNews[0].id+1
+                    id: listOfNews[0].id+1,
+                    settings: req.body.settings
             });
         }
         
@@ -140,17 +142,10 @@ export async function postNews(req,res) {
     }
     
 }
-export async function postSearchNews(req,res) {
-    const token = req.headers.authorization.split(' ')[1]; 
-    jwt.verify(token, process.env.secretKey, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Invalid token' });
-        } else {
-          
-        }
-    });
+export async function getSearchNews(req,res) {
+    const searchTitle  = req.query.searchTitle;
     try {
-        const q = query(collection(db, "news"),where("titleForSearch", "array-contains",req.body.searchTitle));
+        const q = query(collection(db, "news"),where("titleForSearch", "array-contains",searchTitle));
         const querySnapshot = await getDocs(q);
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
         res.status(200).send({
@@ -191,7 +186,8 @@ export async function patchNews(req,res) {
                 titleForSearch: arrayOfSearchTitle,
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
-                newsUrl: generate_random_url(req.body.categoryName,req.body.newsId)
+                newsUrl: generate_random_url(req.body.categoryName,req.body.newsId),
+                settings: req.body.settings
             });
         
         res.status(200).send({

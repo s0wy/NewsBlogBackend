@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { upload} from './middlewares/multer.cjs';
 import { getCat,patchCat,postCat,deleteCat,putCat } from "./routes/categoryReqs.js";
-import { getNewsR,postNews,patchNews,deleteNews,putNews,optionsNews,getNewsCat,postSearchNews } from "./routes/newsReqs.js";
+import { getNewsR,postNews,patchNews,deleteNews,putNews,optionsNews,getNewsCat,getSearchNews } from "./routes/newsReqs.js";
 import { postAuth,postCheckAuth } from "./routes/authReq.js";
 import dotenv from "dotenv";
 import { postUpload } from "./routes/uploadReq.js";
@@ -38,7 +38,7 @@ app.post('/checkAuth', postCheckAuth);
 app.get('/news',getNewsR);
 app.get('/news-category',getNewsCat);
 app.post('/news', postNews); 
-app.post('/searchNews',postSearchNews);
+app.get('/searchNews',getSearchNews);
 app.patch('/news', patchNews)
 app.delete('/news', deleteNews)
 app.put('/news', putNews);
