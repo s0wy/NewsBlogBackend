@@ -1,5 +1,5 @@
 import { db,getCategory} from '../database/firebase.js';
-import {generate_random_urlForCat } from "../middlewares/randomNewsUrl.js";
+import {generate_random_urlForCat,translit} from "../middlewares/randomNewsUrl.js";
 import { collection, getDocs,doc,updateDoc,query,where,deleteDoc,limit,arrayUnion} from 'firebase/firestore/lite';
 import  jwt  from "jsonwebtoken"
 import dotenv from "dotenv";
@@ -117,10 +117,12 @@ export async function putCat(req,res) {
         } else {
         }
     })
+    const categoryTranslitName = translit(req.body.categoryName);
     const newCategory = {
         categoryId: req.body.categoryId,
         categoryLink: generate_random_urlForCat(req.body.categoryName),
-        categoryName: req.body.categoryName
+        categoryName: req.body.categoryName,
+        categoryTranslitName: categoryTranslitName
     }
     try {
         await updateDoc(doc(db,'category',"vzN6ranpGrG4SZfCMsvb"),{

@@ -1,6 +1,6 @@
 import { db,getNews} from '../database/firebase.js';
 import { generate_random_string } from '../middlewares/randomId.js';
-import { generate_random_url} from "../middlewares/randomNewsUrl.js";
+import { generate_random_url,translit} from "../middlewares/randomNewsUrl.js";
 import { collection, getDocs, addDoc,doc,updateDoc,query,where,deleteDoc,limit,orderBy,startAt} from 'firebase/firestore/lite';
 import { translitForCat } from "../middlewares/transiltForSearch.js"
 import  jwt  from "jsonwebtoken"
@@ -50,11 +50,10 @@ export async function getNewsR(req,res) {
 }
 export async function getNewsCat(req,res) {
     const {category} = req.query;
-    const converted = translitForCat(category);
-    const result = converted.charAt(0).toUpperCase() + converted.slice(1)
+    console.log(category);
     if(category != "") {
-        const q = query(collection(db,'news'),where("categoryName","==",result));
-        const querySnapshot = await getDocs(q);;
+        const q = query(collection(db,'news'),where("categoryTranslitName","==",category));
+        const querySnapshot = await getDocs(q);
         const listOfNews = querySnapshot.docs.map(doc => doc.data());
         res.status(200).send({
             status: "SUCCESS",
@@ -93,8 +92,9 @@ export async function postNews(req,res) {
     try {
         const searchTitle = req.body.titleForSearch;
         const arrayOfSearchTitle = searchTitle.split(" ");
+        const categoryTranslitName = translit(req.body.categoryName);
         if(req.body.newsId === "" || req.body.newsId === 0 || req.body.newsId === undefined || req.body.newsUrl === undefined ||
-        req.body.newsUrl === "" || req.body.createdAt === "" || req.body.createdAt === undefined) {
+        req.body.newsUrl === "") {
             await addDoc(collection(db,'news'),{
                 newsId: newsId,
                 newsContent: req.body.newsContent,
@@ -105,7 +105,8 @@ export async function postNews(req,res) {
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
                 id: listOfNews[0].id+1,
-                settings: req.body.settings
+                settings: req.body.settings,
+                categoryTranslitName: categoryTranslitName
                 
                 
         });
@@ -121,7 +122,8 @@ export async function postNews(req,res) {
                     subTitle: req.body.subTitle,
                     titleImageUrl: req.body.titleImageUrl,
                     id: listOfNews[0].id+1,
-                    settings: req.body.settings
+                    settings: req.body.settings,
+                    categoryTranslitName: categoryTranslitName
             });
         }
         
@@ -176,6 +178,7 @@ export async function patchNews(req,res) {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async ({id}) => {
       try {
+        const categoryTranslitName = translit(req.body.categoryName);
         const searchTitle = req.body.titleForSearch;
         const arrayOfSearchTitle = searchTitle.split(" ");
         const newsField = doc(db,'news',id);
@@ -187,7 +190,8 @@ export async function patchNews(req,res) {
                 subTitle: req.body.subTitle,
                 titleImageUrl: req.body.titleImageUrl,
                 newsUrl: generate_random_url(req.body.categoryName,req.body.newsId),
-                settings: req.body.settings
+                settings: req.body.settings,
+                categoryTranslitName: categoryTranslitName
             });
         
         res.status(200).send({

@@ -7,6 +7,7 @@ import { getNewsR,postNews,patchNews,deleteNews,putNews,optionsNews,getNewsCat,g
 import { postAuth,postCheckAuth } from "./routes/authReq.js";
 import dotenv from "dotenv";
 import { postUpload } from "./routes/uploadReq.js";
+import { getTest,postTest } from "./routes/testReq.js";
 const app = express();
 
 
@@ -47,4 +48,9 @@ app.options('/news', optionsNews);
 // upload Images
 
 app.post('/test-upload', upload, postUpload)
+
+// test reqs
+
+app.get('/test',getTest)
+app.post('/test', postTest); 
 app.listen(3000);

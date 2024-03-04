@@ -1,4 +1,4 @@
-function translit(word){
+export function translit(word){
 	var converter = {
 		'а': 'a',    'б': 'b',    'в': 'v',    'г': 'g',    'д': 'd',
 		'е': 'e',    'ё': 'jo',    'ж': 'zh',   'з': 'z',    'и': 'i',
