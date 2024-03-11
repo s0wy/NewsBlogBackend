@@ -50,7 +50,6 @@ export async function getNewsR(req,res) {
 }
 export async function getNewsCat(req,res) {
     const {category} = req.query;
-    console.log(category);
     if(category != "") {
         const q = query(collection(db,'news'),where("categoryTranslitName","==",category));
         const querySnapshot = await getDocs(q);

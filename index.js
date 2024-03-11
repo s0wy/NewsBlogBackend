@@ -4,7 +4,7 @@ import cors from "cors";
 import { upload} from './middlewares/multer.cjs';
 import { getCat,patchCat,postCat,deleteCat,putCat } from "./routes/categoryReqs.js";
 import { getNewsR,postNews,patchNews,deleteNews,putNews,optionsNews,getNewsCat,getSearchNews } from "./routes/newsReqs.js";
-import { postAuth,postCheckAuth } from "./routes/authReq.js";
+import { changePassword, postAuth,postCheckAuth,getAccInfo} from "./routes/accReqs.js";
 import dotenv from "dotenv";
 import { postUpload } from "./routes/uploadReq.js";
 import { getTest,postTest } from "./routes/testReq.js";
@@ -30,9 +30,10 @@ app.put('/category', putCat);
 app.options('/category', postCat);
 
 // auth reqs
-
+app.get('/account',getAccInfo)
 app.post('/auth',postAuth);
 app.post('/checkAuth', postCheckAuth);
+app.patch('/changePassword',changePassword)
 
 // news reqs
 

@@ -3,6 +3,7 @@ import {generate_random_urlForCat,translit} from "../middlewares/randomNewsUrl.j
 import { collection, getDocs,doc,updateDoc,query,where,deleteDoc,limit,arrayUnion} from 'firebase/firestore/lite';
 import  jwt  from "jsonwebtoken"
 import dotenv from "dotenv";
+import { generate_random_string } from '../middlewares/randomId.js';
 dotenv.config();
 
 
@@ -49,6 +50,16 @@ export async function postCat(req, res){
 };
 
 export async function patchCat(req,res) {
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+            res.status(404).send({
+                status: "Not found"
+            })
+        }   
+    })
     res.status(404).send({
         status: "Not Found"
     })
@@ -89,25 +100,38 @@ export async function deleteCat(req,res) {
         if (err) {
             return res.status(401).json({ message: 'Invalid token' });
         } else {
-        }
+            res.status(404).send({
+                status: "Not found"
+            })
+        }   
     })
-    const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
+    res.status(404).send({
+        status: "Not Found"
+    })
+    // const token = req.headers.authorization.split(' ')[1]; 
+    // jwt.verify(token, process.env.secretKey, (err, decoded) => {
+    //     if (err) {
+    //         return res.status(401).json({ message: 'Invalid token' });
+    //     } else {
+    //     }
+    // })
+    // const q = query(collection(db, "category"), where("categoryId", "==", req.body.categoryId));
 
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(async ({id}) => {
-      try {
-        await deleteDoc(doc(db,'category',id));
+    // const querySnapshot = await getDocs(q);
+    // querySnapshot.forEach(async ({id}) => {
+    //   try {
+    //     await deleteDoc(doc(db,'category',id));
         
-        res.status(200).send({
-            status: "SUCCESS"
-        })
-    } catch (error) {
-        console.error("Ошибка при добавлении объекта:", error);
-        res.status(500).send({
-            status: "Internal Error"
-        })
-    }
-    });
+    //     res.status(200).send({
+    //         status: "SUCCESS"
+    //     })
+    // } catch (error) {
+    //     console.error("Ошибка при добавлении объекта:", error);
+    //     res.status(500).send({
+    //         status: "Internal Error"
+    //     })
+    // }
+    // });
 }
 export async function putCat(req,res) {
     const token = req.headers.authorization.split(' ')[1]; 
@@ -119,7 +143,7 @@ export async function putCat(req,res) {
     })
     const categoryTranslitName = translit(req.body.categoryName);
     const newCategory = {
-        categoryId: req.body.categoryId,
+        categoryId: generate_random_string(),
         categoryLink: generate_random_urlForCat(req.body.categoryName),
         categoryName: req.body.categoryName,
         categoryTranslitName: categoryTranslitName
