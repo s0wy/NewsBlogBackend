@@ -143,7 +143,7 @@ export async function putCat(req,res) {
     })
     const categoryTranslitName = translit(req.body.categoryName);
     const newCategory = {
-        categoryId: generate_random_string(),
+        categoryId: generate_random_string(9),
         categoryLink: generate_random_urlForCat(req.body.categoryName),
         categoryName: req.body.categoryName,
         categoryTranslitName: categoryTranslitName
