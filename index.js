@@ -15,7 +15,7 @@ const app = express();
 dotenv.config();
 app.use(cors({
     origin: ['http://127.0.0.1:5500','http://localhost:5173','https://supervision-nine.vercel.app'], // Разрешенный источник запросов
-    methods: 'GET, POST, PATCH, DELETE' // Допустимые методы запросов
+    methods: 'GET, POST, PATCH, DELETE, PUT, OPTION' // Допустимые методы запросов
 }));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: true,limit:'50mb'}))
