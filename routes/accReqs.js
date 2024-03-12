@@ -12,7 +12,6 @@ export async function getAccInfo(req,res) {
         if (err) {
             return res.status(401).json({ message: 'Invalid token' });
         } else {
-            return res.status(200).json({ message: 'success' });
         }
  })
     const q = query(collection(db, "users"));
