@@ -74,6 +74,11 @@ export async function postTest(req,res) {
                 settings: req.body.settings  
                 
         });
+        await addDoc(collection(db,'testResults'),{
+            testId: testId,
+            testResults: []
+            
+    });
         }
         else {
             await addDoc(collection(db,'news'),{
@@ -105,3 +110,81 @@ export async function postTest(req,res) {
     }
     
 }
+
+export async function getTestResults(req,res) {
+    try {
+        const q = query(collection(db, "testResults"));
+        const querySnapshot = await getDocs(q);
+        const testResultList = querySnapshot.docs.map(doc => doc.data());
+        res.status(200).send({
+            status: "SUCCESS",
+            listOfResults: testResultList
+        })
+    } catch (error) {
+        res.status(500).send({
+            status: "Internal Error"
+        })
+    }
+
+}
+export async function sendTestResult(req,res) { 
+    const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+          
+        }
+    });
+    try {
+        const testResult = {
+            user: req.body.user,
+            procentOfCorrectAnswers: req.body.procentOfCorrectAnswers,
+        }
+        const q = query(collection(db,'testResults'),where("testId","==",req.body.testId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async ({id}) => {
+            const testField = doc(db,'testResults',id);
+            await updateDoc(testField, {
+                testResults: 
+                arrayUnion(testResult)
+            
+            })
+    })
+    res.status(200).send({
+        status: "SUCCESS"
+    })        
+    } catch (error) {
+        console.error("Ошибка при добавлении объекта:", error);
+        res.status(500).send({
+            status: "Internal Error"
+        })
+    }
+
+
+}
+export async function deleteTest(req,res) {
+  const token = req.headers.authorization.split(' ')[1]; 
+    jwt.verify(token, process.env.secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        } else {
+          
+        }
+    });
+    try {
+        const q = query(collection(db, "tests"), where("testId", "==", req.body.testId));
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async ({id}) => {
+            await deleteDoc(doc(db,'tests',id));
+            
+            res.status(200).send({
+                status: "SUCCESS"
+            })
+        })}
+         catch (error) {
+        
+    }
+}
+

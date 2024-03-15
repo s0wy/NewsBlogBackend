@@ -7,7 +7,7 @@ import { getNewsR,postNews,patchNews,deleteNews,putNews,optionsNews,getNewsCat,g
 import { changePassword, postAuth,postCheckAuth,getAccInfo} from "./routes/accReqs.js";
 import dotenv from "dotenv";
 import { postUpload } from "./routes/uploadReq.js";
-import { getTest,postTest } from "./routes/testReq.js";
+import { getTest,postTest,deleteTest,sendTestResult,getTestResults} from "./routes/testReq.js";
 const app = express();
 
 
@@ -54,4 +54,7 @@ app.post('/test-upload', upload, postUpload)
 
 app.get('/test',getTest)
 app.post('/test', postTest); 
+app.delete('/test',deleteTest)
+app.get('/testResult',getTestResults);
+app.put('/testResult',sendTestResult)
 app.listen(3000);
